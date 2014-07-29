@@ -51,45 +51,45 @@ host this yourself.
     <video id='vid' />
 <script type="text/javascript">
   window.onload = function() {
-	// Turn on debugging so that you can see what is going on.  Please turn this off
-	// on your production receivers to improve performance.
+    // Turn on debugging so that you can see what is going on.  Please turn this off
+    // on your production receivers to improve performance.
     cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
 
-	// Start the receiver SDK.
+    // Start the receiver SDK.
     console.log('Application is ready, starting system');
     window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
     castReceiverManager.onSenderDisconnected = function (event) {
       console.log("sender disconnected");
       if(window.castReceiverManager.getSenders().length == 0 &&
-	    event.reason == cast.receiver.system.DisconnectReason.REQUESTED_BY_SENDER) {
-	      window.close();
-	  }
+        event.reason == cast.receiver.system.DisconnectReason.REQUESTED_BY_SENDER) {
+          window.close();
+      }
     };
     window.castReceiverManager.start();
 
-	// Use MSE with the media element.
+    // Use MSE with the media element.
     window.video = document.getElementById('vid');
     window.mediaSource = new MediaSource();
-	window.video.src = window.URL.createObjectURL(window.mediaSource);
+    window.video.src = window.URL.createObjectURL(window.mediaSource);
     window.allSegments = null;
 
-	/**
-	 * Loads the video and kicks off the processing.
-	 */
-	window.mediaSource.addEventListener('sourceopen', function(){
-	  window.sourceBuffer = window.mediaSource.addSourceBuffer(
-	      'video/mp4; codecs="avc1.42c01e"');
+    /**
+     * Loads the video and kicks off the processing.
+     */
+    window.mediaSource.addEventListener('sourceopen', function(){
+      window.sourceBuffer = window.mediaSource.addSourceBuffer(
+          'video/mp4; codecs="avc1.42c01e"');
 
-	  fileDownload('your_video.mp4');
+      fileDownload('your_video.mp4');
     });
 
     /**
-	 * When video data is ready, append the video source buffer.
-	 * @param {arrayBuffer} ArrayBuffer with video segments.
-	 */
+     * When video data is ready, append the video source buffer.
+     * @param {arrayBuffer} ArrayBuffer with video segments.
+     */
     function onLoad(arrayBuffer) {
-	  console.log("onLoad");
-	  if (!arrayBuffer) {
+      console.log("onLoad");
+      if (!arrayBuffer) {
         window.video.src = null;
         return;
       }
@@ -98,47 +98,47 @@ host this yourself.
       processNextSegment();
     }
 
-	/**
-	 * Processes the next video segment for the video.
-	 */
+    /**
+     * Processes the next video segment for the video.
+     */
     function processNextSegment() {
-	  // Wait for the source buffer to be updated
-	  if (!window.sourceBuffer.updating && window.sourceBuffer.buffered.length > 0) {
-		  // Only push a new fragment if we are not updating and we have
-		  // less than 10 seconds in the pipeline
-	      if (window.sourceBuffer.buffered.end(window.sourceBuffer.buffered.length - 1) - window.video.currentTime < 10) {
-		    // Append the video segments and adjust the timestamp offset forward
-	        window.sourceBuffer.timestampOffset = window.sourceBuffer.buffered.end(this.sourceBuffer.buffered.length - 1);
-	        window.sourceBuffer.appendBuffer(window.allSegments);
-	      }
-	      // Start playing the video
-	      if (window.video.paused) {
-	        window.video.play();
-	      }
-	  }
-	  setTimeout(processNextSegment, 1000);
-	};
+      // Wait for the source buffer to be updated
+      if (!window.sourceBuffer.updating && window.sourceBuffer.buffered.length > 0) {
+          // Only push a new fragment if we are not updating and we have
+          // less than 10 seconds in the pipeline
+          if (window.sourceBuffer.buffered.end(window.sourceBuffer.buffered.length - 1) - window.video.currentTime < 10) {
+            // Append the video segments and adjust the timestamp offset forward
+            window.sourceBuffer.timestampOffset = window.sourceBuffer.buffered.end(this.sourceBuffer.buffered.length - 1);
+            window.sourceBuffer.appendBuffer(window.allSegments);
+          }
+          // Start playing the video
+          if (window.video.paused) {
+            window.video.play();
+          }
+      }
+      setTimeout(processNextSegment, 1000);
+    };
 
-	/**
-	 * Sends the xhr request to download the video.
-	 * @param {string} url to load.
-	 */
+    /**
+     * Sends the xhr request to download the video.
+     * @param {string} url to load.
+     */
     function fileDownload(url) {
-	  var xhr = new XMLHttpRequest();
-	  xhr.open('GET', url, true);
-	  xhr.responseType = 'arraybuffer';
-	  xhr.send();
-	  xhr.onload = function(e) {
-	    if (xhr.status != 200) {
-	      onLoad();
-	      return;
-	    }
-	    onLoad(xhr.response);
-	  };
-	  xhr.onerror = function(e) {
-	    window.video.src = null;
-	  };
-	};
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.send();
+      xhr.onload = function(e) {
+        if (xhr.status != 200) {
+          onLoad();
+          return;
+        }
+        onLoad(xhr.response);
+      };
+      xhr.onerror = function(e) {
+        window.video.src = null;
+      };
+    };
   };
 </script>
   </body>
